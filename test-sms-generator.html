@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Test SMS Generator for WebOTP API</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
+          sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+
+      .container {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        padding: 40px;
+        width: 100%;
+        max-width: 600px;
+      }
+
+      .title {
+        text-align: center;
+        color: #333;
+        margin-bottom: 30px;
+        font-size: 28px;
+        font-weight: 600;
+      }
+
+      .form-group {
+        margin-bottom: 20px;
+      }
+
+      .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        color: #555;
+        font-weight: 500;
+      }
+
+      .form-group input,
+      .form-group select {
+        width: 100%;
+        padding: 12px 16px;
+        border: 2px solid #e1e5e9;
+        border-radius: 8px;
+        font-size: 16px;
+        transition: border-color 0.3s ease;
+      }
+
+      .form-group input:focus,
+      .form-group select:focus {
+        outline: none;
+        border-color: #667eea;
+      }
+
+      .btn {
+        width: 100%;
+        padding: 14px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.2s ease;
+        margin-bottom: 20px;
+      }
+
+      .btn:hover {
+        transform: translateY(-2px);
+      }
+
+      .btn-secondary {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+      }
+
+      .sms-preview {
+        background-color: #f8f9fa;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        padding: 20px;
+        margin-top: 20px;
+        font-family: monospace;
+        white-space: pre-line;
+        line-height: 1.6;
+      }
+
+      .sms-preview h4 {
+        color: #495057;
+        margin-bottom: 15px;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
+          sans-serif;
+      }
+
+      .instructions {
+        background-color: #e3f2fd;
+        border: 1px solid #bbdefb;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 30px;
+      }
+
+      .instructions h3 {
+        color: #1976d2;
+        margin-bottom: 15px;
+      }
+
+      .instructions ol {
+        color: #424242;
+        line-height: 1.6;
+      }
+
+      .instructions li {
+        margin-bottom: 8px;
+      }
+
+      .copy-btn {
+        background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+        font-size: 14px;
+        padding: 8px 16px;
+        margin-top: 10px;
+      }
+
+      .domain-note {
+        background-color: #fff3cd;
+        border: 1px solid #ffeaa7;
+        border-radius: 8px;
+        padding: 15px;
+        margin-top: 20px;
+        color: #856404;
+      }
+
+      .domain-note strong {
+        color: #d63031;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1 class="title">Test SMS Generator for WebOTP API</h1>
+
+      <div class="instructions">
+        <h3>📱 How to Test WebOTP API:</h3>
+        <ol>
+          <li>Generate a test SMS using the form below</li>
+          <li>Send this SMS to your phone number</li>
+          <li>
+            Open the OTP app in Chrome on Android (or desktop with Android
+            device)
+          </li>
+          <li>Click "Send OTP" in the app</li>
+          <li>The OTP should auto-fill from the SMS!</li>
+        </ol>
+      </div>
+
+      <form id="smsForm">
+        <div class="form-group">
+          <label for="domain">Website Domain *</label>
+          <input
+            type="text"
+            id="domain"
+            name="domain"
+            value="localhost:3000"
+            required
+          />
+          <small
+            >Enter your website domain (e.g., localhost:3000,
+            yourdomain.com)</small
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="otpCode">OTP Code *</label>
+          <input
+            type="text"
+            id="otpCode"
+            name="otpCode"
+            maxlength="6"
+            pattern="[0-9]{6}"
+            required
+          />
+          <small>Enter a 6-digit OTP code</small>
+        </div>
+
+        <div class="form-group">
+          <label for="messageType">Message Type</label>
+          <select id="messageType" name="messageType">
+            <option value="verification">Verification Code</option>
+            <option value="login">Login Code</option>
+            <option value="signup">Sign Up Code</option>
+            <option value="reset">Password Reset</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="companyName">Company/App Name (Optional)</label>
+          <input
+            type="text"
+            id="companyName"
+            name="companyName"
+            placeholder="Your App Name"
+          />
+        </div>
+
+        <button type="button" class="btn" onclick="generateSMS()">
+          Generate Test SMS
+        </button>
+        <button
+          type="button"
+          class="btn btn-secondary"
+          onclick="generateRandomOTP()"
+        >
+          Generate Random OTP
+        </button>
+      </form>
+
+      <div id="smsPreview" class="sms-preview" style="display: none">
+        <h4>📱 Generated SMS Message:</h4>
+        <div id="smsContent"></div>
+        <button class="btn copy-btn" onclick="copySMS()">
+          📋 Copy SMS Text
+        </button>
+      </div>
+
+      <div class="domain-note">
+        <strong>⚠️ Important:</strong> Make sure the domain in the SMS matches
+        your website's domain exactly. For local development, use
+        "localhost:3000". For production, use your actual domain.
+      </div>
+
+      <div style="margin-top: 30px; text-align: center; color: #666">
+        <p>
+          <strong>Supported Browsers:</strong> Chrome/Edge 84+ (Android), Chrome
+          Desktop with Android device
+        </p>
+        <p>
+          <strong>Requirements:</strong> HTTPS connection, proper SMS format
+        </p>
+      </div>
+    </div>
+
+    <script>
+      function generateRandomOTP() {
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        document.getElementById("otpCode").value = otp;
+      }
+
+      function generateSMS() {
+        const domain = document.getElementById("domain").value.trim();
+        const otpCode = document.getElementById("otpCode").value.trim();
+        const messageType = document.getElementById("messageType").value;
+        const companyName = document.getElementById("companyName").value.trim();
+
+        if (!domain || !otpCode) {
+          alert("Please fill in domain and OTP code");
+          return;
+        }
+
+        if (!/^[0-9]{6}$/.test(otpCode)) {
+          alert("OTP code must be exactly 6 digits");
+          return;
+        }
+
+        const messages = {
+          verification: "Your verification code is",
+          login: "Your login code is",
+          signup: "Your sign-up code is",
+          reset: "Your password reset code is",
+        };
+
+        const messageText =
+          messages[messageType] || "Your verification code is";
+        const appName = companyName ? ` from ${companyName}` : "";
+
+        const smsText = `${messageText}: ${otpCode}${appName}
+
+@${domain} #${otpCode}`;
+
+        document.getElementById("smsContent").textContent = smsText;
+        document.getElementById("smsPreview").style.display = "block";
+      }
+
+      function copySMS() {
+        const smsContent = document.getElementById("smsContent").textContent;
+        navigator.clipboard
+          .writeText(smsContent)
+          .then(() => {
+            alert("SMS text copied to clipboard!");
+          })
+          .catch((err) => {
+            console.error("Failed to copy: ", err);
+            // Fallback for older browsers
+            const textArea = document.createElement("textarea");
+            textArea.value = smsContent;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand("copy");
+            document.body.removeChild(textArea);
+            alert("SMS text copied to clipboard!");
+          });
+      }
+
+      // Auto-generate random OTP on page load
+      window.onload = function () {
+        generateRandomOTP();
+      };
+
+      // Auto-generate SMS when OTP changes
+      document.getElementById("otpCode").addEventListener("input", function () {
+        if (this.value.length === 6) {
+          generateSMS();
+        }
+      });
+
+      // Auto-generate SMS when domain changes
+      document.getElementById("domain").addEventListener("input", function () {
+        const otpCode = document.getElementById("otpCode").value;
+        if (otpCode.length === 6) {
+          generateSMS();
+        }
+      });
+    </script>
+  </body>
+</html>
